@@ -1,4 +1,4 @@
-# Cellular Automata Application
+# Connectable Cellular Automata 
 
 ## Overview
 
