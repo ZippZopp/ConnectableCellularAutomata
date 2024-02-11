@@ -25,6 +25,7 @@ public class CCAApplication extends Application {
     private static final int WINDOW_HEIGHT = CELL_HEIGHT*CELL_SIZE;
 
 
+    CellularAutomataRuleSet ruleSet;
     BooleanWorld booleanWorld;
 
     CellularAutomataWorld cellularAutomataWorld;
@@ -32,8 +33,8 @@ public class CCAApplication extends Application {
     public CCAApplication() {
         this.booleanWorld = new BooleanWorld(CELL_HEIGHT, CELL_WIDTH);
         this.cellularAutomataWorld = new CellularAutomataWorld(CELL_HEIGHT, CELL_WIDTH);
+        ruleSet = CellularAutomataRuleSet.GAME_OF_LIVE;
     }
-
 
 
     @Override
@@ -79,7 +80,11 @@ public class CCAApplication extends Application {
     }
 
     private void handleSecondaryClick(int x, int y, GraphicsContext gc) {
-        CellularAutomataField newField = new CellularAutomataField(x, y, 10, 10, CellularAutomataRuleSet.GAME_OF_LIVE);
+        addNewField(x, y, gc,ruleSet);
+    }
+
+    private void addNewField(int x, int y, GraphicsContext gc, CellularAutomataRuleSet ruleSet) {
+        CellularAutomataField newField = new CellularAutomataField(x, y, 10, 10, ruleSet);
         cellularAutomataWorld.addField(newField);
         drawGrid(gc); // Redraw to show the new field
     }
@@ -88,6 +93,15 @@ public class CCAApplication extends Application {
         canvas.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.SPACE) { // Use SPACE bar to toggle pause
                 paused[0] = !paused[0];
+            }else if(event.getCode() == KeyCode.DIGIT1){
+                ruleSet = CellularAutomataRuleSet.GAME_OF_LIVE;
+                System.out.println("Selected: "+ruleSet);
+            }else if(event.getCode() == KeyCode.DIGIT2){
+                ruleSet = CellularAutomataRuleSet.HIGH_LIFE;
+                System.out.println("Selected: "+ruleSet);
+            }else if(event.getCode() == KeyCode.DIGIT3){
+                ruleSet = CellularAutomataRuleSet.SEEDS;
+                System.out.println("Selected: "+ruleSet);
             }
         });
     }
