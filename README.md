@@ -36,7 +36,7 @@ This Cellular Automata Application provides a dynamic environment for simulating
 
 ### Usage
 
-- **select RuleSet**: press 1 for Game of Live, press 2 for High Live and press 3 for seeds.
+- **select RuleSet**: press 1 for Game of Live, press 2 for High Live and press 3 for Seeds.
 - **Creating a Field**: Right-click on the grid to define the top-left corner of a new field. Fields are fixed in size and will apply a specific rule set.
 - **Activating Cells**: Left-click on any cell within the grid to set its state to active. This is only allowed when the simulation is paused.
 - **Pausing/Resuming the Simulation**: Press the SPACE bar to toggle the simulation's paused state.
