@@ -25,7 +25,7 @@ This Cellular Automata Application provides a dynamic environment for simulating
 1. Clone the repository to your local machine:
 
    ```sh
-   git clone https://your-repository-url-here.git
+   git clone https://github.com/ZippZopp/ConnectableCellularAutomata.git
    ```
 
 2. Navigate to the project directory and use Maven to compile and run the application:
