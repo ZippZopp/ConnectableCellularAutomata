@@ -3,15 +3,15 @@ package com.zippzopp.connectebelcellularautomata;
 import com.zippzopp.connectebelcellularautomata.UtilityClasses.Position;
 import com.zippzopp.connectebelcellularautomata.UtilityClasses.RuleSetPosition;
 import com.zippzopp.connectebelcellularautomata.Worlds.BooleanWorld;
-import com.zippzopp.connectebelcellularautomata.Worlds.CellularAutomataField;
 import com.zippzopp.connectebelcellularautomata.Worlds.CellularAutomataWorld;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -24,7 +24,7 @@ public class CCAApplication extends Application {
     private static final int WINDOW_WIDTH = CELL_WIDTH*CELL_SIZE;
     private static final int WINDOW_HEIGHT = CELL_HEIGHT*CELL_SIZE;
 
-
+    private int drawRuleSetRadius = 1;
     CellularAutomataRuleSet ruleSet;
     BooleanWorld booleanWorld;
 
@@ -48,7 +48,7 @@ public class CCAApplication extends Application {
         canvas.setFocusTraversable(true);
         final boolean[] paused = {false};
 
-        setUpMouseClickedHandler(canvas, gc, paused);
+        setUpMouseDraggedHandler(canvas, gc);
         setUpKeyPressedHandler(canvas, paused);
 
         StackPane root = new StackPane();
@@ -59,17 +59,25 @@ public class CCAApplication extends Application {
         startAnimationTimer(gc, paused);
     }
 
-    private void setUpMouseClickedHandler(Canvas canvas, GraphicsContext gc, boolean[] paused) {
-        canvas.setOnMouseClicked(event -> {
+    private void setUpMouseDraggedHandler(Canvas canvas, GraphicsContext gc) {
+        canvas.setOnMousePressed(getMouseEventEventHandler(gc));
+        canvas.setOnMouseDragged(getMouseEventEventHandler(gc));
+    }
+
+    private EventHandler<MouseEvent> getMouseEventEventHandler(GraphicsContext gc) {
+        return event -> {
             int x = (int) event.getX() / CELL_SIZE;
             int y = (int) event.getY() / CELL_SIZE;
 
-            if (event.getButton() == MouseButton.PRIMARY && paused[0]) {
+            // Determine which mouse button is being held
+            if (event.isPrimaryButtonDown()) {
+                // Handle the primary button drag action
                 handlePrimaryClick(x, y, gc);
-            } else if (event.getButton() == MouseButton.SECONDARY) {
+            } else if (event.isSecondaryButtonDown()) {
+                // Handle the secondary button drag action
                 handleSecondaryClick(x, y, gc);
             }
-        });
+        };
     }
 
     private void handlePrimaryClick(int x, int y, GraphicsContext gc) {
@@ -80,28 +88,36 @@ public class CCAApplication extends Application {
     }
 
     private void handleSecondaryClick(int x, int y, GraphicsContext gc) {
-        addNewField(x, y, gc,ruleSet);
+        drawRuleSet(x, y, gc);
     }
 
-    private void addNewField(int x, int y, GraphicsContext gc, CellularAutomataRuleSet ruleSet) {
-        CellularAutomataField newField = new CellularAutomataField(x, y, 10, 10, ruleSet);
-        cellularAutomataWorld.addField(newField);
-        drawGrid(gc); // Redraw to show the new field
+
+
+    private void drawRuleSet(int x,int y,GraphicsContext gc){
+        cellularAutomataWorld.setCells(x,y,drawRuleSetRadius,ruleSet);
+        drawGrid(gc);
     }
 
     private void setUpKeyPressedHandler(Canvas canvas, boolean[] paused) {
         canvas.setOnKeyPressed(event -> {
-            if (event.getCode() == KeyCode.SPACE) { // Use SPACE bar to toggle pause
+
+
+
+            if(event.getCode() == KeyCode.SPACE) { // Use SPACE bar to toggle pause
                 paused[0] = !paused[0];
-            }else if(event.getCode() == KeyCode.DIGIT1){
+                System.out.println(paused[0] ? "PAUSED" : "UNPAUSED");
+            }else if(event.getCode() == KeyCode.F1){
                 ruleSet = CellularAutomataRuleSet.GAME_OF_LIVE;
                 System.out.println("Selected: "+ruleSet);
-            }else if(event.getCode() == KeyCode.DIGIT2){
+            }else if(event.getCode() == KeyCode.F2){
                 ruleSet = CellularAutomataRuleSet.HIGH_LIFE;
                 System.out.println("Selected: "+ruleSet);
-            }else if(event.getCode() == KeyCode.DIGIT3){
+            }else if(event.getCode() == KeyCode.F3){
                 ruleSet = CellularAutomataRuleSet.SEEDS;
                 System.out.println("Selected: "+ruleSet);
+            }else if (event.getCode().isDigitKey()) {
+                drawRuleSetRadius = Character.getNumericValue(event.getText().charAt(0));
+                System.out.println("drawRuleSetRadius set to: " + drawRuleSetRadius);
             }
         });
     }
@@ -126,7 +142,6 @@ public class CCAApplication extends Application {
 
 
     private void updateWorld(){
-        cellularAutomataWorld.update();
         BooleanWorld oldWorld = booleanWorld.copy();
         for(RuleSetPosition ruleSetPosition : cellularAutomataWorld){
             Position position = ruleSetPosition.position();
@@ -144,17 +159,15 @@ public class CCAApplication extends Application {
                 if (booleanWorld.doesElementExist(x, y)) {
                     gc.setFill(Color.WHITE);
                 } else {
-                    gc.setFill(Color.BLACK);
+                    gc.setFill(switch (cellularAutomataWorld.getCell(x, y)){
+                        case EMPTY -> Color.BLACK;
+                        case GAME_OF_LIVE -> Color.BLUE;
+                        case HIGH_LIFE -> Color.ORANGE;
+                        case SEEDS -> Color.GREEN;
+                    });
                 }
                 gc.fillRect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
             }
-        }
-
-
-        gc.setStroke(Color.BLUE);
-        gc.setLineWidth(2);
-        for (CellularAutomataField field : cellularAutomataWorld.getFields()) {
-            gc.strokeRect(field.getX() * CELL_SIZE, field.getY() * CELL_SIZE, field.getWidth() * CELL_SIZE, field.getHeight() * CELL_SIZE);
         }
     }
 
