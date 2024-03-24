@@ -1,4 +1,5 @@
-# Connectable Cellular Automata
+# Dynamic Cellular Automata
+
 
 ## Overview
 
