@@ -9,11 +9,8 @@ import java.util.*;
 
 public class CellularAutomataWorld implements Iterable<RuleSetPosition> {
 
-    public Set<CellularAutomataField> getFields() {
-        return cellularAutomataFields;
-    }
 
-    final private Set<CellularAutomataField> cellularAutomataFields;
+
     private List<CellularAutomataRuleSet> world;
     private final int width;
     private final int height;
@@ -22,7 +19,6 @@ public class CellularAutomataWorld implements Iterable<RuleSetPosition> {
         this.height = height;
         this.width = width;
         initWorld();
-        cellularAutomataFields = new HashSet<>();
     }
 
     private void initWorld() {
@@ -30,31 +26,24 @@ public class CellularAutomataWorld implements Iterable<RuleSetPosition> {
     }
 
 
-    public void update(){
-        initWorld();
-        for(CellularAutomataField field : cellularAutomataFields) {
-            for(Position position : field){
-                setCell(position.x(),position.y(), determineRuleSetForField(field.getRuleSet(), getCell(position.x(), position.y())));
+    public CellularAutomataRuleSet getCell(int x, int y) {
+        return isInWorldBound(x, y) ? world.get(toIndex(x, y)) : CellularAutomataRuleSet.EMPTY;
+    }
+
+    private boolean isInWorldBound(int x, int y) {
+        return isInBound(x, width) && isInBound(y, height);
+    }
+
+    public void setCells(int x, int y,int radius, CellularAutomataRuleSet ruleSet) {
+        for(int relativeToMiddleX = -radius; relativeToMiddleX <= radius; relativeToMiddleX++) {
+            for(int relativeToMiddleY = -radius; relativeToMiddleY <= radius; relativeToMiddleY++) {
+                final int currentX = x+relativeToMiddleX;
+                final int currentY = y+relativeToMiddleY;
+                if(isInWorldBound(currentX,currentY) && (radius+0.5 >= Math.sqrt(relativeToMiddleX*relativeToMiddleX + relativeToMiddleY*relativeToMiddleY))){
+                    world.set(toIndex(currentX, currentY), ruleSet);
+                }
             }
         }
-    }
-
-    private static CellularAutomataRuleSet determineRuleSetForField(CellularAutomataRuleSet newRuleSet, CellularAutomataRuleSet oldRuleSet){
-        return newRuleSet;
-    }
-
-    public CellularAutomataRuleSet getCell(int x, int y) {
-        if(!(isInBound(x, width) && isInBound(y, height)))
-            throw new IllegalArgumentException("width and height needs to be in bound");
-
-        return world.get(toIndex(x, y));
-    }
-
-    public CellularAutomataRuleSet setCell(int x, int y, CellularAutomataRuleSet ruleSet) {
-        if(!(isInBound(x, width) && isInBound(y, height)))
-            throw new IllegalArgumentException("width and height needs to be in bound");
-
-        return world.set(toIndex(x, y), ruleSet);
     }
 
     /**
@@ -101,7 +90,4 @@ public class CellularAutomataWorld implements Iterable<RuleSetPosition> {
         };
     }
 
-    public boolean addField(CellularAutomataField newField) {
-       return cellularAutomataFields.add(newField);
-    }
 }
